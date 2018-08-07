@@ -1,0 +1,79 @@
+#!/bin/sh
+
+set -eu
+cd "$(dirname "$0")"
+
+if [ ! -e "download/base.img" ]; then
+  echo "base image not found" >&2
+  exit 1
+fi
+
+vm_id="${1:-}"
+if [ -z "$vm_id" ]; then
+  echo "Usage: $0 <vm_id>" >&2
+  exit 1
+fi
+
+case "$vm_id" in
+  ''|*[!0-9]*)
+    echo "vm_id=$vm_id isn't number" >&2
+    exit 1 ;;
+esac
+
+if [ "$vm_id" -lt 1 ] || [ "$vm_id" -gt 99 ]; then
+  echo "vm_id must be in 1-99" >&2
+  exit 1
+fi
+
+vm_root="vms/$vm_id"
+mkdir -p "$vm_root"
+
+printf '\e[22t'
+printf '\033]2;%s\007' "QEMU/KVM: vm${vm_id}"
+restore_title() { printf '\e[23t' ; }
+trap "restore_title" EXIT
+
+vm_lock="$vm_root/.lock"
+if ! mkdir "$vm_lock" >/dev/null 2>&1; then
+  echo "cannot aquire lock $vm_lock" >&2
+  exit 1
+fi
+release_lock() { rmdir "$vm_lock"; }
+trap "restore_title; release_lock" EXIT
+
+vm_iface="if-core-$vm_id"
+
+case "$vm_id" in
+  [0-9]) vm_mac=52:54:00:00:00:0$vm_id ;;
+  *)     vm_mac=52:54:00:00:00:$vm_id ;;
+esac
+
+if ! ip link show br-core >/dev/null 2>/dev/null; then
+  ./setup-bridge-iface
+fi
+
+sudo ip tuntap add $vm_iface mode tap user user group user
+sudo ip link set $vm_iface master br-core up
+remove_iface() { sudo ip link del "$vm_iface"; }
+trap "restore_title; release_lock; remove_iface" EXIT
+
+(
+  cd "$vm_root"
+  if [ ! -e root.qcow2 ]; then
+    qemu-img create -f qcow2 -b ../../download/base.img root.qcow2 >/dev/null
+  fi
+  if [ ! -s ignition.json ]; then
+    cat ../../template/config.yml | sed \
+      -e "s/__VM_HOSTNAME__/vm${vm_id}/g" \
+      -e "s/__VM_IP__/10.12.34.$((100+vm_id))\/24/g" \
+      -e "s/__VM_GATEWAY__/10.12.34.1/g" \
+    | ../../download/ct -strict > ignition.json
+  fi
+  exec qemu-system-x86_64 \
+    -enable-kvm -nographic -vga none \
+    -cpu host -smp 1 -m 512M \
+    -drive file=root.qcow2,format=qcow2,if=virtio \
+    -netdev tap,id=net0,ifname=$vm_iface,vhost=on,script=no,downscript=no \
+    -device virtio-net-pci,netdev=net0,mac=$vm_mac \
+    -fw_cfg name=opt/com.coreos/config,file=./ignition.json
+)

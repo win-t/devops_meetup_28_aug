@@ -1,0 +1,59 @@
+#!/usr/bin/env docker.sh
+
+# Author: win@payfazz.com
+
+name=devops-demo-kvm-$dirsum
+image=$name
+net=container:$("$dir/net" name)
+must_local=y
+opts="
+  -v '$dir/..:/host_data'
+  --device /dev/kvm
+  --device /dev/net/tun
+  --device /dev/vhost-net
+  --cap-add NET_ADMIN
+"
+
+pre_pull() {
+  panic "Image '$image' can't be pulled, please build"
+}
+
+pre_start() {
+  if [ "$1" = run ]; then
+    [ -c /dev/kvm ] || panic "/dev/kvm not found on host"
+    [ -c /dev/net/tun ] || panic "/dev/net/tun not found on host"
+    [ -c /dev/vhost-net ] || panic "/dev/vhost-net not found on host"
+    exists image "$image" || command_build || panic "Failed to build image"
+  fi
+  case "$1" in
+  run|start) "$dir/net" start || panic "Failed to start net container" ;;
+  esac
+}
+
+post_start() {
+  if [ "$1" = run ]; then
+    main exec sh -ceu "
+      addgroup -g '$(id -g)' user
+      adduser -D -u '$(id -u)' -G user -s /bin/sh user
+      echo 'user ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/user
+      chmod 666 /dev/kvm /dev/net/tun /dev/vhost-net
+    " \
+    || panic "Failed to setup container after it running"
+  fi
+}
+
+command_build() {
+  cd "$dir"
+  tar c \
+    ./dockerfiles/kvm.Dockerfile \
+    ./extras/docker_pid1 \
+  | docker build --pull -t "$image" -f dockerfiles/kvm.Dockerfile -
+}
+
+command_run_vm() {
+  main start || panic "Failed to start container"
+  main exec_as user sh -ceu '
+    cd /host_data
+    exec ./coreos-vms/run-vm "$@"
+  ' - "$@"
+}

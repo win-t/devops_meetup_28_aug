@@ -1,0 +1,29 @@
+#!/usr/bin/env docker.sh
+
+# Author: win@payfazz.com
+
+# This container do nothing.
+# We just need its network namespace.
+# It is similar to the pause conainter on kubernetes pod.
+
+name=devops-demo-net-$dirsum
+image=devops-demo-net-$dirsum
+net=devops-demo-net-$dirsum
+
+pre_pull() {
+  panic "Image '$image' can't be pulled, please build"
+}
+
+pre_start() {
+  if [ "$1" = run ]; then
+    exists image "$image" || command_build || panic "Failed to build image"
+  fi
+}
+
+command_build() {
+  cd "$dir"
+  tar c \
+    ./dockerfiles/net.Dockerfile \
+    ./extras/docker_pid1 \
+  | docker build -t "$image" -f dockerfiles/net.Dockerfile -
+}

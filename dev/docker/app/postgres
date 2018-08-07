@@ -1,0 +1,21 @@
+#!/usr/bin/env docker.sh
+
+name=postgres-$dirsum
+image=postgres:10-alpine
+net=net-$dirsum
+opts="
+  -p 127.0.0.1:5432:5432
+  --network-alias postgres
+  -v '$name:/var/lib/postgresql/data'
+  -e POSTGRES_USER=testuser
+  -e POSTGRES_PASSWORD=testpassword
+  -e POSTGRES_DB=testdb
+"
+
+post_start() {
+  [ "$1" = run ] && sleep 5
+}
+
+command_rmvol() {
+  docker volume rm "$name" > /dev/null
+}

@@ -1,0 +1,8 @@
+- hosts: registry
+  gather_facts: False
+  become: True
+  tasks:
+  - name: sync registry folder
+    synchronize: src=registry dest=/container_state archive=no recursive=yes use_ssh_args=yes
+  - name: start registry
+    docker_sh: path=/container_state/registry/app

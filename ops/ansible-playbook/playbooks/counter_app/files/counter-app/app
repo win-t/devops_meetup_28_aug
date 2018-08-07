@@ -1,0 +1,16 @@
+#!/usr/bin/env docker.sh
+
+image=10.12.34.101:5000/counter-app
+opts="
+  --restart always
+  -p 8080:8080
+
+  -e POSTGRES_HOST=10.12.34.102
+  -e POSTGRES_USER=counter-app
+  -e POSTGRES_PASSWORD=0ac95d127b48c0e366c9b770c71d2888
+  -e POSTGRES_DB=counter-app
+
+  --log-driver json-file
+  --log-opt max-size=50m
+  --log-opt max-file=3
+"

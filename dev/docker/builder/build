@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -eu
+cd "$(dirname "$0")/../.."
+
+image_tag=$(./docker/app/app image)
+if [ -z "${1:-}" ]; then
+  echo "image_tag is not specified, using default '$image_tag'"
+else
+  image_tag=$1
+fi
+
+docker build -t "$image_tag" -f docker/builder/Dockerfile .

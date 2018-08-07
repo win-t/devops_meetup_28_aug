@@ -1,0 +1,8 @@
+- hosts: database
+  gather_facts: False
+  become: True
+  tasks:
+  - name: sync postgres folder
+    synchronize: src=postgres dest=/container_state archive=no recursive=yes use_ssh_args=yes
+  - name: start postgres
+    docker_sh: path=/container_state/postgres/app

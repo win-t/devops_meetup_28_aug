@@ -1,0 +1,8 @@
+#!/usr/bin/env docker.sh
+
+image=nginx:alpine
+must_local=y
+opts="
+  -p 8888:80
+  -v '$dir/root:/usr/share/nginx/html'
+"

@@ -1,0 +1,15 @@
+#!/usr/bin/env docker.sh
+
+name=counter-app-$dirsum
+image=counter-app
+net=net-$dirsum
+opts="
+  -p 8080:8080
+  -e POSTGRES_HOST=postgres
+"
+
+pre_start() {
+  case "$1" in
+  run|start) "$dir/postgres" start || panic "Failed to start postgres" ;;
+  esac
+}

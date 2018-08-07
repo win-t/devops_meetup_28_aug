@@ -1,0 +1,8 @@
+- hosts: web
+  gather_facts: False
+  become: True
+  tasks:
+  - name: sync counter-app folder
+    synchronize: src=counter-app dest=/container_state archive=no recursive=yes use_ssh_args=yes
+  - name: start counter-app
+    docker_sh: path=/container_state/counter-app/app

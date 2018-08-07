@@ -1,0 +1,31 @@
+passwd:
+  users:
+  - name: core
+    # this is hash of "core"
+    password_hash: $1$WQBDgGxC$.XqYN/x5dLpEt3si1pp0z0
+    ssh_authorized_keys:
+    # generated from id_rsa
+    - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/tZrQmwxeS0r/DxpkEG3twypXErANbHgkdhRihmlTMCE0Z4BWhPFcUwSp2lQuFrDSR1duVIa5Mv0UJ0Lo7xxr8vGYn7MCJvwiUo/77VvtFVNXXJ7LWDErH+B7sneJ4+xKQbmaQji8PVjZnTWiZA8KeHa+04eXfREy9oys5TBQTc7J0vDMGsM2OauLOvDUYiQKLv7tM5MOwhbsjlp1ZcZdlIvEMQyjwmhvKlrcBTHt6m/Xqj51OkPsaR/e/IhOei28BSNFNLr6MEJxexfY4aKcGlzf7HdcvhkW9kB27i0e9tc5hM9kaXObtBDzWFQpwxXBdoNaQ0xZd4olRWRbpLSh"
+
+storage:
+  files:
+  - filesystem: root
+    path: /etc/hostname
+    # 420 is 0o644
+    mode: 420
+    contents:
+      inline: |
+        __VM_HOSTNAME__
+
+networkd:
+  units:
+  - name: 00-eth0.network
+    contents: |
+      [Match]
+      Name=eth0
+
+      [Network]
+      Address=__VM_IP__
+      Gateway=__VM_GATEWAY__
+      DNS=8.8.8.8
+      DNS=8.8.4.4

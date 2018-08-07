@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -eu
+cd "$(dirname "$0")"
+
+echo "Download docker_pid1"; (
+  [ -e docker_pid1 ] && echo "..already exists" && exit 0
+  wget -O docker_pid1 https://github.com/win-t/docker_pid1/releases/download/v3.0.0/docker_pid1
+  chmod 755 docker_pid1
+)

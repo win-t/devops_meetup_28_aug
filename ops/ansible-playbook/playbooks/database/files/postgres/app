@@ -1,0 +1,17 @@
+#!/usr/bin/env docker.sh
+
+image=postgres:10-alpine
+must_local=y
+opts="
+  --restart always
+  -p 5432:5432
+  -v '$dir/data:/var/lib/postgresql/data'
+
+  -e POSTGRES_USER=counter-app
+  -e POSTGRES_PASSWORD=0ac95d127b48c0e366c9b770c71d2888
+  -e POSTGRES_DB=counter-app
+
+  --log-driver json-file
+  --log-opt max-size=50m
+  --log-opt max-file=3
+"

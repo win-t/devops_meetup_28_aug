@@ -1,0 +1,12 @@
+[Unit]
+Requires=usr.mount
+After=usr.mount
+
+[Mount]
+What=overlay
+Where=/usr/bin
+Type=overlay
+Options=lowerdir=/usr/bin,upperdir=/opt/bin_overlay/upper,workdir=/opt/bin_overlay/work
+
+[Install]
+WantedBy=local-fs.target

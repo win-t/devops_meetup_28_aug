@@ -1,0 +1,8 @@
+- hosts: "{{ pb_hosts }}"
+  gather_facts: False
+  become: True
+  tasks:
+  - name: sync nginx folder
+    synchronize: src=nginx dest=/container_state archive=no recursive=yes use_ssh_args=yes
+  - name: start nginx
+    docker_sh: path=/container_state/nginx/app

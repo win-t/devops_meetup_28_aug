@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -eu
+cd "$(dirname "$0")"
+
+./docker/extras/download-files
+./coreos-vms/download-files
+./ansible-playbook/extras/download-files

@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -eu
+cd "$(dirname "$0")/.."
+
+echo "Download docker_sh.py"; (
+  mkdir -p library
+  cd library
+
+  [ -e docker_sh.py ] && echo "..already exists" && exit 0
+
+  wget -O docker_sh.py \
+    https://raw.githubusercontent.com/payfazz/docker-sh/master/ansible_module/docker_sh.py
+)
+
+echo "Download pypy.tar.gz"; (
+  cd playbooks/coreos_bootstrap/files/bootstrap
+
+  [ -e pypy.tar.gz ] && echo "..already exists" && exit 0
+
+  ./download-pypy
+)

@@ -1,0 +1,9 @@
+#!/usr/bin/env docker.sh
+
+image=nginx:alpine
+must_local=y
+opts="
+  --restart always
+  -v '$dir/conf.d:/etc/nginx/conf.d:ro'
+  -p 80:80
+"

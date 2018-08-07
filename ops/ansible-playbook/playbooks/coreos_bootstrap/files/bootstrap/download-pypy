@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# Author: win@payfazz.com
+
+set -eu
+cd "$(dirname "$0")"
+
+lock_dir="$(basename "$0").lock"
+if ! mkdir "$lock_dir" >/dev/null 2>&1; then
+  echo "cannot aquire lock $lock_dir" >&2
+  exit 1
+fi
+trap "rmdir \"$lock_dir\"" EXIT
+
+if [ ! -e pypy.tar.gz ]; then
+  wget -O pypy.tar.gz https://bitbucket.org/squeaky/portable-pypy/downloads/pypy-6.0.0-linux_x86_64-portable.tar.bz2
+fi
+
+if ! echo "c78a3b9890f6a06485d350bf460debcd  pypy.tar.gz" | md5sum -c >/dev/null; then
+  echo "pypy.tar.gz checksum mismatch" >&2
+  exit 1
+fi

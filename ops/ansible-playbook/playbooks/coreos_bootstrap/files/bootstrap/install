@@ -1,0 +1,53 @@
+#!/bin/sh
+
+# Author: win@payfazz.com
+
+set -eu
+cd "$(dirname "$0")"
+
+lock_dir="$(basename "$0").lock"
+if ! mkdir "$lock_dir" >/dev/null 2>&1; then
+  echo "cannot aquire lock $lock_dir" >&2
+  exit 1
+fi
+trap "rmdir \"$lock_dir\"" EXIT
+
+if [ -e /etc/.bootstrapped ]; then
+  exit 0
+fi
+
+# make /usr/bin writable by overlaying it.
+mkdir -p /opt/bin_overlay/upper /opt/bin_overlay/work
+cp usr-bin.mount /etc/systemd/system
+systemctl daemon-reload
+systemctl enable usr-bin.mount
+systemctl start usr-bin.mount
+
+# install pypy
+./download-pypy
+mkdir -p /opt/pypy
+tar --strip-components=1 -x -C /opt/pypy -f pypy.tar.gz
+ln -s /opt/pypy/bin/pypy /usr/bin/python
+
+# install docker-sh
+curl -sSLf https://raw.githubusercontent.com/payfazz/docker-sh/master/install.sh | sh -s - /usr/bin/docker.sh
+
+# allow insecure registry
+mkdir -p /etc/docker
+cat <<'EOF' > /etc/docker/daemon.json
+{
+  "insecure-registries" : ["10.12.34.101:5000"]
+}
+EOF
+
+# The container convention
+mkdir -p /var/lib/docker /container_state
+chmod 711 /container_state
+systemctl stop docker
+mv /var/lib/docker /container_state/.docker
+ln -sf /container_state/.docker /var/lib/docker
+systemctl enable docker
+systemctl start docker
+
+# Mark this host
+date +%s > /etc/.bootstrapped

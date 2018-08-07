@@ -1,0 +1,15 @@
+#!/usr/bin/env docker.sh
+
+image=registry:latest
+must_local=y
+opts="
+  --restart always
+  -p 5000:5000
+  -v '$dir/data:/var/lib/registry'
+
+  -e REGISTRY_STORAGE_DELETE_ENABLED=true
+
+  --log-driver json-file
+  --log-opt max-size=50m
+  --log-opt max-file=3
+"
