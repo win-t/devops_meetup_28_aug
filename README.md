@@ -1,9 +1,11 @@
 Hello World
 
-The presentation is [here](https://docs.google.com/presentation/d/1LyRuNm0cv-yk0UWnYsxALLSq2LXFG7zFnXX9-uT9cRI/edit?usp=sharing)
+The presentation is [here](https://docs.google.com/presentation/d/1q2hkx9ioHv0XCcvjnIv1p856ttk1FJIt6fDmY8WWgRE/edit?usp=sharing)
 
 
 # demo note
+
+Please install [docker-sh](https://github.com/payfazz/docker-sh) first.
 
 ## dev side
 
