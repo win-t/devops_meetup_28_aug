@@ -3,4 +3,5 @@
 set -eu
 cd "$(dirname "$0")"
 
+chmod 400 ../coreos-vms/template/id_rsa || :
 exec ../docker/ansible run_playbook "$@"
